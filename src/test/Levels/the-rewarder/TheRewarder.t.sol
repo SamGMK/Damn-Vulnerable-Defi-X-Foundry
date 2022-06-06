@@ -57,6 +57,7 @@ contract TheRewarder is DSTest {
 
     Utilities internal utils;
     FlashLoanerPool internal flashLoanerPool;
+    RewardToken internal rewardToken;
     TheRewarderPool internal theRewarderPool;
     DamnValuableToken internal dvt;
     address payable[] internal users;
@@ -92,6 +93,8 @@ contract TheRewarder is DSTest {
         dvt.transfer(address(flashLoanerPool), TOKENS_IN_LENDER_POOL);
 
         theRewarderPool = new TheRewarderPool(address(dvt));
+
+        rewardToken = theRewarderPool.rewardToken();
 
         // Alice, Bob, Charlie and David deposit 100 tokens each
         for (uint8 i; i < 4; i++) {
@@ -132,7 +135,10 @@ contract TheRewarder is DSTest {
         /** EXPLOIT START **/
         vm.startPrank(attacker);
         AttackerContract attackerContract = new AttackerContract(
-            address(flashLoanerPool)
+            dvt,
+            flashLoanerPool,
+            theRewarderPool,
+            rewardToken
         );
         attackerContract.attack();
 
