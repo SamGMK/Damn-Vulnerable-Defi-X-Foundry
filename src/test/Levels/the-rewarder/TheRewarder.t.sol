@@ -15,7 +15,10 @@ import {FlashLoanerPool} from "../../../Contracts/the-rewarder/FlashLoanerPool.s
 contract AttackerContract {
     address public owner;
     FlashLoanerPool public flashLoanerPool;
-    uint256 TOTAL_AMOUNT_TO_FLASHLOAN = 1_000_000e18 - 1;
+    uint256 internal constant TOTAL_AMOUNT_TO_FLASHLOAN = 1_000_000e18 - 1;
+    DamnValuableToken internal dvt;
+    RewardToken internal rewardToken;
+    TheRewarderPool internal theRewarderPool;
 
     constructor(address pool) {
         owner = msg.sender;
