@@ -10,6 +10,18 @@ import {DamnValuableTokenSnapshot} from "../../../Contracts/DamnValuableTokenSna
 import {SimpleGovernance} from "../../../Contracts/selfie/SimpleGovernance.sol";
 import {SelfiePool} from "../../../Contracts/selfie/SelfiePool.sol";
 
+contract AttackerContract {
+    address public owner;
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function attack() public {
+        require(msg.sender == owner, "Not owner");
+    }
+}
+
 contract Selfie is DSTest {
     Vm internal immutable vm = Vm(HEVM_ADDRESS);
 
@@ -47,7 +59,7 @@ contract Selfie is DSTest {
         console.log(unicode"🧨 PREPARED TO BREAK THINGS 🧨");
     }
 
-    function testExploit() public {
+    function testSelfieExploit() public {
         /** EXPLOIT START **/
 
         /** EXPLOIT END **/
