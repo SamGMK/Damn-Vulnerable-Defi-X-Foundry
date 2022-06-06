@@ -13,12 +13,16 @@ import {SelfiePool} from "../../../Contracts/selfie/SelfiePool.sol";
 contract AttackerContract {
     address public owner;
 
-    constructor() {
+    SelfiePool selfiePool;
+
+    constructor(SelfiePool _selfiePool, ) {
         owner = msg.sender;
+        selfiePool = _selfiePool;
     }
 
     function attack() public {
         require(msg.sender == owner, "Not owner");
+
     }
 }
 
