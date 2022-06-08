@@ -78,7 +78,7 @@ contract Compromised is DSTest {
         console.log(unicode"🧨 PREPARED TO BREAK THINGS 🧨");
     }
 
-    function testExploit() public {
+    function testCompromisedExploit() public {
         /** EXPLOIT START **/
         //The private keys for the oracle sources were exposed thus we assume control of both oracle sources and manipulate price
         vm.prank(0xe92401A4d3af5E446d93D11EEc806b1462b39D15);
