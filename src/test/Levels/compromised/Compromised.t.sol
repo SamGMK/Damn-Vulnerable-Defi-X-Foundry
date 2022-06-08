@@ -97,8 +97,8 @@ contract Compromised is DSTest {
         trustfulOracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE);
 
         vm.startPrank(attacker);
-        damnValuableNFT.setApprovalForAll(address(exchange), true);
-        exchange.sellOne(1);
+        damnValuableNFT.approve(address(exchange), 0);
+        exchange.sellOne(0);
         vm.stopPrank();
 
         vm.prank(0xe92401A4d3af5E446d93D11EEc806b1462b39D15);
