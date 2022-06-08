@@ -98,7 +98,7 @@ contract Compromised is DSTest {
 
         vm.startPrank(attacker);
         damnValuableNFT.setApprovalForAll(address(exchange), true);
-        exchange.sellOne();
+        exchange.sellOne(1);
         vm.stopPrank();
 
         vm.prank(0xe92401A4d3af5E446d93D11EEc806b1462b39D15);
